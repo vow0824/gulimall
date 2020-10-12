@@ -8,6 +8,7 @@ import com.aliyun.oss.model.PolicyConditions;
 import com.vow.common.utils.R;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -16,6 +17,7 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+@RefreshScope
 @RestController
 public class OSSController {
 

@@ -1,8 +1,8 @@
 spring:
   datasource:
     username: root
-    password: 123123
-    url: jdbc:mysql://127.0.0.1:3306/gulimall_sms?characterEncoding=UTF-8&serverTimezone=UTC
+    password: root
+    url: jdbc:mysql://192.168.43.219:3306/gulimall_sms?characterEncoding=UTF-8&serverTimezone=UTC
   cloud:
     nacos:
       discovery:
