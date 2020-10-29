@@ -9,7 +9,7 @@ import java.util.List;
 public class SearchResult {
 
     // 查询到的所有商品信息
-    private List<SkuEsModel> product;
+    private List<SkuEsModel> products;
 
     // 分页信息
     private Integer pageNum;    // 当前页面

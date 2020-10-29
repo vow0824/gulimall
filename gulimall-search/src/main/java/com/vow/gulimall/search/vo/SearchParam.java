@@ -29,7 +29,7 @@ public class SearchParam {
      * brand=1
      *
      */
-    private Integer hasStock;   // 是否只显示有货的
+    private Integer hasStock;   // 是否只显示有货的（1：有库存，0：无库存）
     private String skuPrice;    // 价格区间
     private List<Long> brandIds;      // 品牌ID，可以多选
     private List<String> attrs; // 按照属性筛选
