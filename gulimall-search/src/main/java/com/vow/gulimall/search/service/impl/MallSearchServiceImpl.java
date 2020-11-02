@@ -86,8 +86,8 @@ public class MallSearchServiceImpl implements MallSearchService {
             boolQueryBuilder.filter(QueryBuilders.termQuery("catalogId", searchParam.getCatalog3Id()));
         }
         // 1.3 filter 按照品牌id过滤
-        if (searchParam.getBrandIds() != null && searchParam.getBrandIds().size() > 0) {
-            boolQueryBuilder.filter(QueryBuilders.termQuery("brandId", searchParam.getBrandIds()));
+        if (searchParam.getBrandId() != null && searchParam.getBrandId().size() > 0) {
+            boolQueryBuilder.filter(QueryBuilders.termsQuery("brandId", searchParam.getBrandId()));
         }
         // 1.4 filter 按照属性过滤
         if (searchParam.getAttrs() != null && searchParam.getAttrs().size() > 0) {
@@ -98,10 +98,10 @@ public class MallSearchServiceImpl implements MallSearchService {
                 String attrId = s[0];   // 检索的属性id
                 String[] attrValues = s[1].split(":");  // 检索的属性值
                 nestedBoolQuery.must(QueryBuilders.termQuery("attrs.attrId", attrId));
-                nestedBoolQuery.must(QueryBuilders.termQuery("attrs.attrValue", attrValues));
+                nestedBoolQuery.must(QueryBuilders.termsQuery("attrs.attrValue", attrValues));
                 // 每一个必须都得生成一个nested查询
                 NestedQueryBuilder nestedQuery = QueryBuilders.nestedQuery("attrs", nestedBoolQuery, ScoreMode.None);
-                boolQueryBuilder.filter();
+                boolQueryBuilder.filter(nestedQuery);
             }
         }
         // 1.5 filter 按照库存过滤
