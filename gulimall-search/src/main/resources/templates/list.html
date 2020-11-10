@@ -402,8 +402,8 @@
         <a href="http://gulimall.com"><img src="/static/search/./image/logo1.jpg" alt=""></a>
     </div>
     <div class="header_form">
-        <input type="text" placeholder="手机" />
-        <a href="/static/search/#">搜索</a>
+        <input id="keyword_input" type="text" placeholder="手机" />
+        <a href="javascript:searchByKeyWord();">搜索</a>
     </div>
     <div class="header_ico">
         <div class="header_gw">
@@ -1972,6 +1972,10 @@
             location.href = location.href + "?" + name + "=" + value;
         }
 
+    }
+
+    function searchByKeyWord() {
+        searchProducts("keyword", $("#keyword_input").val());
     }
 </script>
 </body>
