@@ -2,7 +2,7 @@ spring:
   datasource:
     username: root
     password: root
-    url: jdbc:mysql://192.168.43.219:3306/gulimall_pms?characterEncoding=UTF-8&serverTimezone=UTC
+    url: jdbc:mysql://192.168.43.97:3306/gulimall_pms?characterEncoding=UTF-8&serverTimezone=UTC
     driver-class-name: com.mysql.cj.jdbc.Driver
   cloud:
     nacos:
@@ -15,7 +15,7 @@ spring:
   thymeleaf:
     cache: true
   redis:
-    host: 192.168.43.219
+    host: 192.168.43.97
     port: 6379
 mybatis-plus:
   mapper-locations: classpath:/mapper/**/*.xml
