@@ -4,7 +4,158 @@ import java.util.concurrent.*;
 
 public class ThreadTest {
     public static ExecutorService executorService = Executors.newFixedThreadPool(10);
+
     public static void main(String[] args) throws ExecutionException, InterruptedException {
+        System.out.println("main thread starting...");
+        /*CompletableFuture<Void> completableFuture = CompletableFuture.runAsync(() -> {
+            System.out.println("当前线程：" + Thread.currentThread().getId());
+            int i = 10 / 2;
+            System.out.println("运行结果：" + i);
+        }, executorService);*/
+        /**
+         * 方法成功完成后的感知
+         */
+        /*CompletableFuture<Integer> completableFuture = CompletableFuture.supplyAsync(() -> {
+            System.out.println("当前线程：" + Thread.currentThread().getId());
+            int i = 10 / 0;
+            System.out.println("运行结果：" + i);
+            return i;
+        }, executorService).whenComplete((result, exception) -> {
+            //虽然能得到返回信息，但是没法修改返回数据。
+            System.out.println("异步任务成功完成了，结果是：" + result + ",异常是：" + exception);
+        }).exceptionally(throwable -> {
+            // 可以感知异常，同时返回默认值。
+            return 10;
+        });*/
+
+        /**
+         * 方法执行完成后的处理
+         */
+        /*CompletableFuture<Integer> completableFuture = CompletableFuture.supplyAsync(() -> {
+            System.out.println("当前线程：" + Thread.currentThread().getId());
+            int i = 10 / 4;
+            System.out.println("运行结果：" + i);
+            return i;
+        }, executorService).handle((result, exception) -> {
+            if (result != null) {
+                return result * 2;
+            }
+            if (exception != null) {
+                return 0;
+            }
+            return 0;
+        });*/
+        /**
+         * 线程串行化
+         *  1、thenRunAsync：不能获取到上一步的执行结果，无返回值。
+         *      .thenRunAsync(() -> {
+         *             System.out.println("任务二启动了。。。");
+         *         }, executorService);
+         *  2、thenAcceptAsync能接收上一步的执行结果，但是无返回值。
+         *      .thenAcceptAsync(res -> {
+         *             System.out.println("线程3执行了。。。" + res);
+         *         }, executorService);
+         *  3、thenApplyAsync：能接收上一步的执行结果，而且有返回值。
+         *      .thenApplyAsync(res -> {
+         *             System.out.println("任务二启动了" + res);
+         *             return "hello" + res;
+         *         }, executorService)
+         */
+        /*CompletableFuture<String> stringCompletableFuture = CompletableFuture.supplyAsync(() -> {
+            System.out.println("当前线程：" + Thread.currentThread().getId());
+            int i = 10 / 4;
+            System.out.println("运行结果：" + i);
+            return i;
+        }, executorService).thenApplyAsync(res -> {
+            System.out.println("任务二启动了" + res);
+            return "hello" + res;
+        }, executorService);*/
+
+        /**
+         * 两个都完成
+         */
+        /*CompletableFuture<Object> future01 = CompletableFuture.supplyAsync(() -> {
+            System.out.println("任务1线程：" + Thread.currentThread().getId());
+            int i = 10 / 4;
+            System.out.println("任务1运行结果：" + i);
+            return i;
+        }, executorService);
+
+        CompletableFuture<Object> future02 = CompletableFuture.supplyAsync(() -> {
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            System.out.println("任务2线程：" + Thread.currentThread().getId());
+            System.out.println("任务2运行结束");
+            return "hello";
+        }, executorService);*/
+
+        /*future01.runAfterBothAsync(future02, () -> {
+            System.out.println("任务3线程开始。。");
+        }, executorService);*/
+
+        /*future01.thenAcceptBothAsync(future02, (res1, res2) -> {
+            System.out.println("任务3线程开始。。。。之前任务1和任务2的结果分别是：" + res1 + "," + res2 + "。");
+        }, executorService);*/
+
+        /*CompletableFuture<String> stringCompletableFuture = future01.thenCombineAsync(future02, (res1, res2) -> {
+            System.out.println("任务3线程开始。。。");
+            return res1 + ":" + res2 + " world!";
+        }, executorService);*/
+
+        /**
+         * 两个任务，只要有一个完成，我们就执行任务3
+         * runAfterEitherAsync：不感知结果，自己也无返回值
+         * acceptEitherAsync：感知结果，无返回值
+         * applyToEitherAsync：感知结果，并且有返回值
+         */
+        /*future01.runAfterEitherAsync(future02, () -> {
+            System.out.println("任务3线程开始执行。。。");
+        }, executorService);*/
+
+        /*future01.acceptEitherAsync(future02, (res) -> {
+            System.out.println("任务3线程开始执行。。。" + res);
+        }, executorService);*/
+
+        /*CompletableFuture<String> stringCompletableFuture = future01.applyToEitherAsync(future01, (res) -> {
+            System.out.println("任务3线程开始执行。。。");
+            return res.toString() + "hello";
+        }, executorService);*/
+
+        CompletableFuture<String> futureImg = CompletableFuture.supplyAsync(() -> {
+            System.out.println("查询商品的图片信息");
+            return "hello.jpg";
+        }, executorService);
+
+        CompletableFuture<String> futureAttr = CompletableFuture.supplyAsync(() -> {
+            System.out.println("查询商品的属性");
+            return "黑色+256G";
+        }, executorService);
+
+        CompletableFuture<String> futureDesc = CompletableFuture.supplyAsync(() -> {
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            System.out.println("查询商品的介绍");
+            return "hello.jpg";
+        }, executorService);
+
+        /*CompletableFuture<Void> allOf = CompletableFuture.allOf(futureImg, futureDesc, futureAttr);
+        allOf.get();*/    // 等待所有结果执行完成
+
+        CompletableFuture<Object> anyOf = CompletableFuture.anyOf(futureImg, futureDesc, futureAttr);
+        anyOf.get();    //只要有一个成功
+
+
+        System.out.println("main thread ended..." + anyOf.get());
+
+    }
+
+    public void thread(String[] args) throws ExecutionException, InterruptedException {
         /**
          * 1、初始化线程的4中方式
          *     1）、继承Thread

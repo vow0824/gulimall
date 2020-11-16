@@ -1,9 +1,11 @@
 package com.vow.gulimall.product;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.vow.gulimall.product.dao.AttrGroupDao;
 import com.vow.gulimall.product.entity.BrandEntity;
 import com.vow.gulimall.product.service.BrandService;
 import com.vow.gulimall.product.service.CategoryService;
+import com.vow.gulimall.product.vo.SpuItemAttrGroupVo;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.redisson.api.RedissonClient;
@@ -34,6 +36,9 @@ class GulimallProductApplicationTests {
 
     @Autowired
     RedissonClient redissonClient;
+
+    @Autowired
+    AttrGroupDao attrGroupDao;
 
     @Test
     public void testFindPath() {
@@ -66,6 +71,12 @@ class GulimallProductApplicationTests {
     @Test
     public void testRedisson() {
         System.out.println(redissonClient);
+    }
+
+    @Test
+    public void test() {
+        List<SpuItemAttrGroupVo> attrGroupWithAttrsBySpuId = attrGroupDao.getAttrGroupWithAttrsBySpuId(1L, 225L);
+        System.out.println(attrGroupWithAttrsBySpuId);
     }
 
 }
