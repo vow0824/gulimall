@@ -2,9 +2,11 @@ package com.vow.gulimall.product;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.vow.gulimall.product.dao.AttrGroupDao;
+import com.vow.gulimall.product.dao.SkuSaleAttrValueDao;
 import com.vow.gulimall.product.entity.BrandEntity;
 import com.vow.gulimall.product.service.BrandService;
 import com.vow.gulimall.product.service.CategoryService;
+import com.vow.gulimall.product.vo.SkuItemSaleAttrVo;
 import com.vow.gulimall.product.vo.SpuItemAttrGroupVo;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -39,6 +41,9 @@ class GulimallProductApplicationTests {
 
     @Autowired
     AttrGroupDao attrGroupDao;
+
+    @Autowired
+    SkuSaleAttrValueDao skuSaleAttrValueDao;
 
     @Test
     public void testFindPath() {
@@ -77,6 +82,12 @@ class GulimallProductApplicationTests {
     public void test() {
         List<SpuItemAttrGroupVo> attrGroupWithAttrsBySpuId = attrGroupDao.getAttrGroupWithAttrsBySpuId(1L, 225L);
         System.out.println(attrGroupWithAttrsBySpuId);
+    }
+
+    @Test
+    public  void testAttr() {
+        List<SkuItemSaleAttrVo> saleAttrsBySpuId = skuSaleAttrValueDao.getSaleAttrsBySpuId(1L);
+        System.out.println(saleAttrsBySpuId);
     }
 
 }
