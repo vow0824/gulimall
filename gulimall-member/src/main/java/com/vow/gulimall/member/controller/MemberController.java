@@ -3,13 +3,14 @@ package com.vow.gulimall.member.controller;
 import java.util.Arrays;
 import java.util.Map;
 
+import com.vow.common.exception.BizCodeEnum;
+import com.vow.gulimall.member.exception.MobileExistException;
+import com.vow.gulimall.member.exception.UserNameExistException;
 import com.vow.gulimall.member.feign.CouponFeignService;
+import com.vow.gulimall.member.vo.MemberLoginVo;
+import com.vow.gulimall.member.vo.MemberRegistVo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.vow.gulimall.member.entity.MemberEntity;
 import com.vow.gulimall.member.service.MemberService;
@@ -43,6 +44,29 @@ public class MemberController {
 
         return R.ok().put("member", memberEntity).put("coupons", memberCoupons.get("coupons"));
 
+    }
+
+    @PostMapping("/login")
+    public R login(@RequestBody MemberLoginVo memberLoginVo) {
+        MemberEntity memberEntity = memberService.login(memberLoginVo);
+        if (memberEntity != null) {
+            return R.ok();
+        } else {
+            return R.error(BizCodeEnum.LOGINACCT_PASSWORD_INVALID_EXCEPTION.getCode(), BizCodeEnum.LOGINACCT_PASSWORD_INVALID_EXCEPTION.getMsg());
+        }
+    }
+
+    @PostMapping("/regist")
+    public R regist(@RequestBody MemberRegistVo memberRegistVo) {
+        try {
+            memberService.regist(memberRegistVo);
+        } catch (UserNameExistException e) {
+            return R.error(BizCodeEnum.USERNAME_EXISTED_EXCEPTION.getCode(), BizCodeEnum.USERNAME_EXISTED_EXCEPTION.getMsg());
+        } catch (MobileExistException e) {
+            return R.error(BizCodeEnum.MOBILE_EXISTED_EXCEPTION.getCode(), BizCodeEnum.MOBILE_EXISTED_EXCEPTION.getMsg());
+        }
+
+        return R.ok();
     }
 
     /**

@@ -1,13 +1,19 @@
 package com.vow.gulimall.thirdparty;
 
 import com.aliyun.oss.OSSClient;
+import com.vow.gulimall.thirdparty.component.SmsComponent;
+import com.vow.gulimall.thirdparty.utils.HttpUtils;
+import org.apache.http.HttpResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 @SpringBootTest
 class GulimallThirdPartyApplicationTests {
@@ -18,6 +24,12 @@ class GulimallThirdPartyApplicationTests {
 
     @Autowired
     OSSClient ossClient;
+
+    @Autowired
+    SmsComponent smsComponent;
+
+    /*@Value("#{spring.cloud.alicloud.sms.appcode}")
+    public String appcode;*/
 
     @Test
     public void testUpload() throws FileNotFoundException {
@@ -34,6 +46,12 @@ class GulimallThirdPartyApplicationTests {
 
         // 关闭OSSClient。
         ossClient.shutdown();
+    }
+
+    @Test
+    public void sendSms() {
+        System.out.println(smsComponent.getAppcode() + smsComponent.getHost() + smsComponent.getPath());
+        smsComponent.sendSms("19805166510", "6789");
     }
 
 }
