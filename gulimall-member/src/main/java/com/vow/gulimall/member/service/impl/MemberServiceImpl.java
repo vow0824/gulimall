@@ -1,14 +1,22 @@
 package com.vow.gulimall.member.service.impl;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.vow.common.utils.HttpUtils;
 import com.vow.gulimall.member.dao.MemberLevelDao;
 import com.vow.gulimall.member.entity.MemberLevelEntity;
 import com.vow.gulimall.member.exception.MobileExistException;
 import com.vow.gulimall.member.exception.UserNameExistException;
 import com.vow.gulimall.member.vo.MemberLoginVo;
 import com.vow.gulimall.member.vo.MemberRegistVo;
+import com.vow.gulimall.member.vo.SocialUserVo;
+import org.apache.http.HttpResponse;
+import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
 import java.util.Map;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -49,6 +57,7 @@ public class MemberServiceImpl extends ServiceImpl<MemberDao, MemberEntity> impl
         checkUserNameUnique(memberEntity.getUsername());
         memberEntity.setMobile(memberRegistVo.getPhone());
         memberEntity.setUsername(memberRegistVo.getUserName());
+        memberEntity.setNickname(memberRegistVo.getUserName());
 
         // 密码进行加密存储
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
@@ -98,6 +107,58 @@ public class MemberServiceImpl extends ServiceImpl<MemberDao, MemberEntity> impl
                 return null;
             }
         }
+    }
+
+    /**
+     * 注册和登录合并逻辑
+     * @param socialUserVo
+     * @return
+     */
+    @Override
+    public MemberEntity login(SocialUserVo socialUserVo) throws Exception {
+        // 1、判断当前社交用户是否已经登录过系统
+        String uid = socialUserVo.getUid();
+        MemberEntity memberEntity = this.baseMapper.selectOne(new QueryWrapper<MemberEntity>().eq("social_uid", uid));
+        if (memberEntity != null) {
+            // 这个用户已经注册了
+            MemberEntity update = new MemberEntity();
+            update.setId(memberEntity.getId());
+            update.setAccessToken(socialUserVo.getAccess_token());
+            update.setExpiresIn(socialUserVo.getExpires_in());
+            this.baseMapper.updateById(update);
+
+            memberEntity.setAccessToken(socialUserVo.getAccess_token());
+            memberEntity.setExpiresIn(socialUserVo.getExpires_in());
+
+            return memberEntity;
+        } else {
+            // 该社交用户尚未登录过系统，注册新账号
+            MemberEntity regist = new MemberEntity();
+            try {
+                // 查询当前社交用户的社交账号信息（昵称，性别）
+                Map<String, String> query = new HashMap<>();
+                query.put("access_token", socialUserVo.getAccess_token());
+                query.put("uid", socialUserVo.getUid());
+                HttpResponse response = HttpUtils.doGet("https://api.weibo.com", "/2/users/show.json", "get", new HashMap<String, String>(), query);
+                if (response.getStatusLine().getStatusCode() == 200) {
+                    String jsonString = EntityUtils.toString(response.getEntity());
+                    JSONObject jsonObject = JSON.parseObject(jsonString);
+                    // 昵称
+                    String name = (String) jsonObject.get("name");
+                    // 性别
+                    String gender = (String) jsonObject.get("gender");
+                    regist.setNickname(name);
+                    regist.setGender("m".equals(gender) ? 1 : 0);
+                }
+            } catch (Exception e) {}
+
+            regist.setSocialUid(socialUserVo.getUid());
+            regist.setAccessToken(socialUserVo.getAccess_token());
+            regist.setExpiresIn(socialUserVo.getExpires_in());
+            this.baseMapper.insert(regist);
+            return regist;
+        }
+
     }
 
 }

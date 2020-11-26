@@ -7,6 +7,7 @@ import com.vow.gulimall.member.exception.MobileExistException;
 import com.vow.gulimall.member.exception.UserNameExistException;
 import com.vow.gulimall.member.vo.MemberLoginVo;
 import com.vow.gulimall.member.vo.MemberRegistVo;
+import com.vow.gulimall.member.vo.SocialUserVo;
 
 import java.util.Map;
 
@@ -28,5 +29,7 @@ public interface MemberService extends IService<MemberEntity> {
     void checkMobileUnique(String mobile) throws MobileExistException;
 
     MemberEntity login(MemberLoginVo memberLoginVo);
+
+    MemberEntity login(SocialUserVo socialUserVo) throws Exception;
 }
 

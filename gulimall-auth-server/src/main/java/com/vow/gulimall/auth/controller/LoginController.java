@@ -4,6 +4,7 @@ import com.alibaba.fastjson.TypeReference;
 import com.vow.common.constant.AuthServerConstant;
 import com.vow.common.exception.BizCodeEnum;
 import com.vow.common.utils.R;
+import com.vow.common.vo.MemberResponseVo;
 import com.vow.gulimall.auth.feign.MemberFeignService;
 import com.vow.gulimall.auth.feign.ThirdPartyFeignService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import vo.UserLoginVo;
 import vo.UserRegistVo;
 
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import java.util.HashMap;
 import java.util.Map;
@@ -115,11 +117,14 @@ public class LoginController {
     }
 
     @PostMapping("/login")
-    public String login(UserLoginVo userLoginVo, RedirectAttributes redirectAttributes) {
+    public String login(UserLoginVo userLoginVo, RedirectAttributes redirectAttributes, HttpSession session) {
         // 远程登录
         R r = memberFeignService.login(userLoginVo);
         if (r.getCode() == 0) {
             // 成功
+            MemberResponseVo data = r.getData("data", new TypeReference<MemberResponseVo>() {
+            });
+            session.setAttribute(AuthServerConstant.LOGIN_USER, data);
             return "redirect:http://gulimall.com";
         } else {
             Map<String, String> errors = new HashMap<>();
@@ -128,5 +133,16 @@ public class LoginController {
             return "redirect:http://auth.gulimall.com/login.html";
         }
 
+    }
+
+    @GetMapping("/login.html")
+    public String loginPage(HttpSession session) {
+        Object loginUser = session.getAttribute(AuthServerConstant.LOGIN_USER);
+        if (loginUser == null) {
+            // 没登录
+            return "login";
+        } else {
+            return "redirect:http://gulimall.com";
+        }
     }
 }
