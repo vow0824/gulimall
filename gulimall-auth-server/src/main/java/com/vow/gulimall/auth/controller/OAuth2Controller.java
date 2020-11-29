@@ -15,7 +15,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import com.vow.common.vo.MemberResponseVo;
-import vo.SocialUserVo;
+import com.vow.gulimall.auth.vo.SocialUserVo;
 
 import javax.servlet.http.HttpSession;
 import java.util.HashMap;

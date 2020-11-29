@@ -15,8 +15,8 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import vo.UserLoginVo;
-import vo.UserRegistVo;
+import com.vow.gulimall.auth.vo.UserLoginVo;
+import com.vow.gulimall.auth.vo.UserRegistVo;
 
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;

@@ -4,9 +4,9 @@ import com.vow.common.utils.R;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import vo.SocialUserVo;
-import vo.UserLoginVo;
-import vo.UserRegistVo;
+import com.vow.gulimall.auth.vo.SocialUserVo;
+import com.vow.gulimall.auth.vo.UserLoginVo;
+import com.vow.gulimall.auth.vo.UserRegistVo;
 
 @FeignClient("gulimall-member")
 public interface MemberFeignService {

@@ -1,4 +1,4 @@
-package vo;
+package com.vow.gulimall.auth.vo;
 
 import lombok.Data;
 
