@@ -92,7 +92,7 @@
                     </div>
                     <div>
                         <ol>
-                            <li><input type="checkbox" class="check" th:checked="${item.check}"></li>
+                            <li><input type="checkbox" th:attr="skuid=${item.skuId}" class="itemCheck" th:checked="${item.check}"></li>
                             <li>
                                 <dt><img th:src="${item.image}" alt=""></dt>
                                 <dd style="width: 300px;">
@@ -108,16 +108,16 @@
 
                             </li>
                             <li>
-                                <p>
-                                    <span>-</span>
-                                    <span th:text="${item.count}">5</span>
-                                    <span>+</span>
+                                <p th:attr="skuid=${item.skuId}">
+                                    <span class="countOpsBtn">-</span>
+                                    <span class="countOpsNum" th:text="${item.count}">5</span>
+                                    <span class="countOpsBtn">+</span>
                                 </p>
 
                             </li>
                             <li style="font-weight:bold"><p class="zj">￥[[${#numbers.formatDecimal(item.totalPrice, 3, 2)}]]</p></li>
                             <li>
-                                <p>删除</p>
+                                <p class="deleteItemBtn" th:attr="skuid=${item.skuId}">删除</p>
 
                             </li>
                         </ol>
@@ -170,7 +170,7 @@
         </dl>
     </div>
     <div>
-        <button type="button">删除</button>
+        <button type="button" onclick="delItem()">删除</button>
 
     </div>
 </div>
@@ -764,5 +764,24 @@
     }).mouseout(function () {
         $(this).children("p").children("img").attr("src", "img/one_mian_gwc1.png")
     })
+    $(".itemCheck").click(function() {
+        var skuId = $(this).attr("skuId");
+        var check = $(this).prop("checked");
+        location.href = "http://cart.gulimall.com/checkItem?skuId=" + skuId + "&check=" + (check?1:0);
+    });
+    $(".countOpsBtn").click(function() {
+        // 1、获取skuId
+        var skuId = $(this).parent().attr("skuId");
+        var num = $(this).parent().find(".countOpsNum").text();
+        location.href = "http://cart.gulimall.com/countItem?skuId=" + skuId + "&num=" + num;
+    });
+
+    var deleteSkuId = 0;
+    function delItem() {
+        location.href = "http://cart.gulimall.com/deleteItem?skuId=" + deleteSkuId;
+    }
+    $(".deleteItemBtn").click(function() {
+        deleteSkuId = $(this).attr("skuId");
+    });
 </script>
 </html>

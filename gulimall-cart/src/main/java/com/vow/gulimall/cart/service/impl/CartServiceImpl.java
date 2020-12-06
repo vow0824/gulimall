@@ -128,6 +128,30 @@ public class CartServiceImpl implements CartService {
         stringRedisTemplate.delete(cartKey);
     }
 
+    @Override
+    public void checkItemm(Long skuId, Integer check) {
+        CartItem cartItem = getCartItem(skuId);
+        cartItem.setCheck(check == 1 ? true : false);
+
+        BoundHashOperations<String, Object, Object> cartOps = getCartOps();
+        cartOps.put(skuId.toString(), JSON.toJSONString(cartItem));
+    }
+
+    @Override
+    public void changeItemCount(Long skuId, Integer num) {
+        CartItem cartItem = getCartItem(skuId);
+        cartItem.setCount(num);
+
+        BoundHashOperations<String, Object, Object> cartOps = getCartOps();
+        cartOps.put(skuId.toString(), JSON.toJSONString(cartItem));
+    }
+
+    @Override
+    public void deleteItem(Long skuId) {
+        BoundHashOperations<String, Object, Object> cartOps = getCartOps();
+        cartOps.delete(skuId.toString());
+    }
+
     /**
      * 获取到我们要操作的购物车
      * @return
