@@ -32,7 +32,7 @@ public class RabbitController {
             } else {
                 OrderEntity orderEntity = new OrderEntity();
                 orderEntity.setOrderSn(UUID.randomUUID().toString());
-                rabbitTemplate.convertAndSend("hello-java-exchange", "hello2.java", orderEntity, new CorrelationData(UUID.randomUUID().toString()));
+                rabbitTemplate.convertAndSend("hello-java-exchange", "hello.java", orderEntity, new CorrelationData(UUID.randomUUID().toString()));
             }
             log.info("消息发送完成");
         }

@@ -3,6 +3,7 @@ package com.vow.gulimall.order.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.vow.common.utils.PageUtils;
 import com.vow.gulimall.order.entity.OrderEntity;
+import com.vow.gulimall.order.vo.OrderConfirmVo;
 
 import java.util.Map;
 
@@ -16,5 +17,11 @@ import java.util.Map;
 public interface OrderService extends IService<OrderEntity> {
 
     PageUtils queryPage(Map<String, Object> params);
+
+    /**
+     * 订单确认页需要用到的数据
+     * @return
+     */
+    OrderConfirmVo confirmOrder();
 }
 

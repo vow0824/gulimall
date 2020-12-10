@@ -8,6 +8,8 @@ import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Service;
+
+import java.io.IOException;
 import java.util.Map;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -63,11 +65,26 @@ public class OrderItemServiceImpl extends ServiceImpl<OrderItemDao, OrderItemEnt
     }*/
 
     @RabbitHandler
-    public void receiveMessage(Message message, OrderReturnReasonEntity content, Channel channel) throws InterruptedException {
+    public void receiveMessage(Message message, OrderReturnReasonEntity content, Channel channel) {
         System.out.println("接收到消息。。。" + content);
         byte[] body = message.getBody();
         MessageProperties messageProperties = message.getMessageProperties();
+        // 通道（channel）内按顺序自增的
+        long deliveryTag = message.getMessageProperties().getDeliveryTag();
         System.out.println("消息处理完成：" + content.getName());
+        // 手动ack，消费消息，非批量模式
+        try {
+            channel.basicAck(deliveryTag, false);
+            // 拒绝，可以批量拒绝
+            // long deliveryTag, boolean multiple, boolean requeue
+            // requeue=true：消息重新入队，requeue=false：消息被丢弃
+            // channel.basicNack();
+            // 拒绝，不能批量拒绝
+            // channel.basicReject();
+        } catch (IOException e) {
+            // 网络中断
+            e.printStackTrace();
+        }
     }
 
     @RabbitHandler
