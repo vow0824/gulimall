@@ -1,5 +1,6 @@
 package com.vow.gulimall.product.app;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -25,6 +26,12 @@ import com.vow.common.utils.R;
 public class SkuInfoController {
     @Autowired
     private SkuInfoService skuInfoService;
+
+    @GetMapping("/{skuId}/price")
+    public R getPrice(@PathVariable("skuId") Long skuId) {
+        SkuInfoEntity entity = skuInfoService.getById(skuId);
+        return R.ok().setData(entity.getPrice().toString());
+    }
 
     /**
      * 列表

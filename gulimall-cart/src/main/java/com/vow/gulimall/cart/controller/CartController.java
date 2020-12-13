@@ -12,9 +12,11 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpSession;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 @Controller
@@ -22,6 +24,12 @@ public class CartController {
 
     @Autowired
     CartService cartService;
+
+    @GetMapping("/currentUserCartItems")
+    @ResponseBody
+    public List<CartItem> getCurrentUserCartItems() {
+        return cartService.getUserCartItems();
+    }
 
     /**
      * 浏览器有一个cookie：user-key 标识用户身份有一个月的过期时间
