@@ -38,6 +38,7 @@ public class OrderConfirmVo {
     // BigDecimal payPrice;
 
     // 防重令牌
+    @Getter @Setter
     String orderToken;
 
     public Integer getCount() {

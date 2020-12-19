@@ -588,7 +588,7 @@
 			<!--</div>-->
 		<!--</div>-->
 		<!--主体部分-->
-		<p class="p1">填写并核对订单信息</p>
+		<p class="p1">填写并核对订单信息<span style="color: red" th:if="${msg != null}" th:text="${msg}"></span></p>
 		<div class="section">
 			<!--收货人信息-->
 			<div class="top-2">
@@ -726,7 +726,12 @@
 				<p class="yfze_a"><span class="z">应付总额：</span><span class="hq">￥<b id="payPrice">[[${#numbers.formatDecimal(orderConfirmData.payPrice, 1, 2)}]]</b></span></p>
 				<p class="yfze_b">寄送至： <span id="receiveAddressEle"></span> 收货人：<span id="receiverEle"></span></p>
 			</div>
-			<button class="tijiao">提交订单</button>
+			<form action="http://order.gulimall.com/submitOrder" method="post">
+				<input id="addrIdInput" type="hidden" name="addrId" value=""/>
+				<input id="payPriceInput" type="hidden" name="payPrice" value=""/>
+				<input type="hidden" name="orderToken" th:value="${orderConfirmData.orderToken}"/>
+				<button class="tijiao" type="submit">提交订单</button>
+			</form>
 		</div>
 		</div>
 
@@ -981,10 +986,16 @@
 			});
 
 			function getFare(addrId) {
+				// 给表单回填选择的地址
+				$("#addrIdInput").val(addrId);
 				$.get("http://gulimall.com/api/ware/wareinfo/fare?addrId=" + addrId, function(data) {
 					$("#fareEle").text(data.data.fare);
 					var total = [[${orderConfirmData.total}]];
-					$("#payPrice").text(total * 1 + data.data.fare * 1);
+					var payPrice = total * 1 + data.data.fare * 1;
+					$("#payPrice").text(payPrice);
+					// 设置表单应付总额
+					$("#payPriceInput").val(payPrice);
+
 
 					// 设置收货人信息
 					$("#receiveAddressEle").text(data.data.address.province + " " + data.data.address.detailAddress);

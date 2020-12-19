@@ -15,6 +15,7 @@ package com.vow.common.exception;
  *     13：购物车
  *     14：物流
  *     15: 用户
+ *     16: 库存
  *     ...
  */
 public enum BizCodeEnum {
@@ -22,9 +23,10 @@ public enum BizCodeEnum {
     VALID_EXCEPTION(10001, "参数格式校验失败"),
     SMS_CODE_EXCEPTION(10002, "验证码获取频率太高，请稍后再试。"),
     PRODUCT_UP_EXCEPTION(11000, "商品上架异常"),
-    USERNAME_EXISTED_EXCEPTION(150001, "用户名已存在"),
-    MOBILE_EXISTED_EXCEPTION(150002, "手机号已存在"),
-    LOGINACCT_PASSWORD_INVALID_EXCEPTION(150003, "账号或密码错误");
+    USERNAME_EXISTED_EXCEPTION(15001, "用户名已存在"),
+    MOBILE_EXISTED_EXCEPTION(15002, "手机号已存在"),
+    LOGINACCT_PASSWORD_INVALID_EXCEPTION(15003, "账号或密码错误"),
+    NO_STOCK_EXCEPTION(16001, "商品库存不足");
 
     private int code;
     private String msg;
