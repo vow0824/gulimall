@@ -17,6 +17,7 @@ import com.vow.gulimall.order.interceptor.LoginUserInterceptor;
 import com.vow.gulimall.order.service.OrderItemService;
 import com.vow.gulimall.order.to.OrderCreateTo;
 import com.vow.gulimall.order.vo.*;
+import io.seata.spring.annotation.GlobalTransactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
@@ -134,6 +135,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         return orderConfirmVo;
     }
 
+    // 本地事务，在分布式系统下，只能控制自己的回滚，控制不了其他服务的回滚
+    // 分布式事务：最大原因，网络问题+分布式机器。
+    @GlobalTransactional
     @Transactional
     @Override
     public SubmitOrderResponseVo submitOrder(OrderSubmitVo orderSubmitVo) {
@@ -176,10 +180,16 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
                 }).collect(Collectors.toList());
                 wareSkuLockVo.setLocks(orderItemVos);
                 // TODO 远程锁库存
+                // 为了保证高并发，库存服务自己回滚，可以发消息给库存服务
+                // 库存服务本身也可以使用自动解锁模式，使用消息队列w
                 R r = wareFeignService.orderLockStock(wareSkuLockVo);
                 if (r.getCode() == 0) {
                     // 锁定成功
                     submitOrderResponseVo.setOrder(order.getOrder());
+
+                    // TODO 模拟调用优惠券服务异常
+                    int i = 10 / 0;
+
                     return submitOrderResponseVo;
                 } else {
                     // 锁定失败
