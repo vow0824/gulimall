@@ -3,6 +3,7 @@ package com.vow.gulimall.order.service.impl;
 import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.vow.common.exception.NoStockException;
+import com.vow.common.to.mq.OrderTo;
 import com.vow.common.utils.R;
 import com.vow.common.vo.MemberResponseVo;
 import com.vow.gulimall.order.constant.OrderConstant;
@@ -18,6 +19,8 @@ import com.vow.gulimall.order.service.OrderItemService;
 import com.vow.gulimall.order.to.OrderCreateTo;
 import com.vow.gulimall.order.vo.*;
 import io.seata.spring.annotation.GlobalTransactional;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
@@ -71,6 +74,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 
     @Autowired
     ProductFeignService productFeignService;
+
+    @Autowired
+    RabbitTemplate rabbitTemplate;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -137,7 +143,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 
     // 本地事务，在分布式系统下，只能控制自己的回滚，控制不了其他服务的回滚
     // 分布式事务：最大原因，网络问题+分布式机器。
-    @GlobalTransactional
+    //@GlobalTransactional
     @Transactional
     @Override
     public SubmitOrderResponseVo submitOrder(OrderSubmitVo orderSubmitVo) {
@@ -188,8 +194,10 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
                     submitOrderResponseVo.setOrder(order.getOrder());
 
                     // TODO 模拟调用优惠券服务异常
-                    int i = 10 / 0;
+                    // int i = 10 / 0;
 
+                    // TODO 订单创建成功，发送消息给MQ
+                    rabbitTemplate.convertAndSend("order-event-exchange", "order.create.order", order.getOrder());
                     return submitOrderResponseVo;
                 } else {
                     // 锁定失败
@@ -213,6 +221,35 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         } else {
             // 不通过
         }*/
+    }
+
+    @Override
+    public OrderEntity getOrderByOrderSn(String orderSn) {
+        OrderEntity orderEntity = this.getOne(new QueryWrapper<OrderEntity>().eq("order_sn", orderSn));
+        return orderEntity;
+    }
+
+    @Override
+    public void closeOrder(OrderEntity orderEntity) {
+        // 查询这个订单的最新状态
+        OrderEntity order = this.getById(orderEntity.getId());
+        // 关单
+        if (order.getStatus() == OrderStatusEnum.CREATE_NEW.getCode()) {
+            OrderEntity updateOrder = new OrderEntity();
+            updateOrder.setId(orderEntity.getId());
+            updateOrder.setStatus(OrderStatusEnum.CANCLED.getCode());
+            this.updateById(updateOrder);
+            OrderTo orderTo = new OrderTo();
+            BeanUtils.copyProperties(order, orderTo);
+            // 主动发送订单取消信息给库存的MQ，要求解锁库存
+            try {
+                // TODO 保证消息一定会发送出去，每一个消息都可以做好日志记录（给数据库保存每一个消息的详细信息）。
+                // TODO 定期扫描数据库将失败的消息重新发送
+                rabbitTemplate.convertAndSend("order-event-exchange", "order.release.other.#", orderTo);
+            } catch (Exception e) {
+                // TODO 将没发送成功的消息进行重试发送
+            }
+        }
     }
 
     /**

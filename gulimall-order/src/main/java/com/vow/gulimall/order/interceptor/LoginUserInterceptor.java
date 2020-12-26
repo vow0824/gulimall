@@ -3,6 +3,7 @@ package com.vow.gulimall.order.interceptor;
 import com.vow.common.constant.AuthServerConstant;
 import com.vow.common.vo.MemberResponseVo;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.servlet.http.HttpServletRequest;
@@ -15,6 +16,14 @@ public class LoginUserInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        /**
+         * 库存服务远程调（feign）用订单服务的订单状态接口时，单独配置，否则会被下面代码拦截，要求登录
+         */
+        boolean match = new AntPathMatcher().match("/order/order/status/**", request.getRequestURI());
+        if (match) {
+            return true;
+        }
+
         MemberResponseVo memberResponseVo = (MemberResponseVo) request.getSession().getAttribute(AuthServerConstant.LOGIN_USER);
         if (memberResponseVo != null) {
             loginUser.set(memberResponseVo);
