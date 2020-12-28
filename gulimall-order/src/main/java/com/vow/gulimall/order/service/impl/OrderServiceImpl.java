@@ -252,6 +252,42 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         }
     }
 
+    @Override
+    public PayVo getOrderPay(String orderSn) {
+
+        PayVo payVo = new PayVo();
+        OrderEntity order = this.getOrderByOrderSn(orderSn);
+
+        BigDecimal amount = order.getTotalAmount().setScale(2, BigDecimal.ROUND_UP);
+        payVo.setTotal_amount(amount.toString());
+        payVo.setOut_trade_no(order.getOrderSn());
+
+        List<OrderItemEntity> order_sn = orderItemService.list(new QueryWrapper<OrderItemEntity>().eq("order_sn", orderSn));
+        payVo.setSubject(order_sn.get(0).getSkuName());
+        payVo.setBody(order_sn.get(0).getSkuAttrsVals());
+
+        return payVo;
+    }
+
+    @Override
+    public PageUtils queryPageWithItem(Map<String, Object> params) {
+        MemberResponseVo memberResponseVo = LoginUserInterceptor.loginUser.get();
+        IPage<OrderEntity> page = this.page(
+                new Query<OrderEntity>().getPage(params),
+                new QueryWrapper<OrderEntity>().eq("member_id", memberResponseVo.getId()).orderByDesc("id")
+        );
+
+        List<OrderEntity> collect = page.getRecords().stream().map(order -> {
+            List<OrderItemEntity> itemEntities = orderItemService.list(new QueryWrapper<OrderItemEntity>().eq("order_sn", order.getOrderSn()));
+            order.setItems(itemEntities);
+            return order;
+        }).collect(Collectors.toList());
+
+        page.setRecords(collect);
+
+        return new PageUtils(page);
+    }
+
     /**
      * 保存订单数据
      * @param order
