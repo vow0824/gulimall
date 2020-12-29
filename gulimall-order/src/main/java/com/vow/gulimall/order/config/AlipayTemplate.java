@@ -23,11 +23,11 @@ public class AlipayTemplate {
     private  String alipay_public_key;
     // 服务器[异步通知]页面路径  需http://格式的完整路径，不能加?id=123这类自定义参数，必须外网可以正常访问
     // 支付宝会悄悄的给我们发送一个请求，告诉我们支付成功的信息
-    private  String notify_url = "http://member.gulimall.com/payed/notify";
+    private  String notify_url;
 
     // 页面跳转同步通知页面路径 需http://格式的完整路径，不能加?id=123这类自定义参数，必须外网可以正常访问
     //同步通知，支付成功，一般跳转到成功页
-    private  String return_url = "http://member.gulimall.com/memberOrder.html";
+    private  String return_url;
 
     // 签名方式
     private  String sign_type;
@@ -37,6 +37,9 @@ public class AlipayTemplate {
 
     // 支付宝网关； https://openapi.alipaydev.com/gateway.do
     private  String gatewayUrl;
+
+    // 超时时间
+    private  String timeout = "1m";
 
     public  String pay(PayVo vo) throws AlipayApiException {
 
@@ -64,6 +67,7 @@ public class AlipayTemplate {
                 + "\"total_amount\":\""+ total_amount +"\","
                 + "\"subject\":\""+ subject +"\","
                 + "\"body\":\""+ body +"\","
+                + "\"timeout_express\":\"" + timeout + "\","
                 + "\"product_code\":\"FAST_INSTANT_TRADE_PAY\"}");
 
         String result = alipayClient.pageExecute(alipayRequest).getBody();
