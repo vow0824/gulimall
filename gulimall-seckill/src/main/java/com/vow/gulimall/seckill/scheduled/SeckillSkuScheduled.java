@@ -20,7 +20,7 @@ public class SeckillSkuScheduled {
     @Autowired
     SeckillService seckillService;
 
-    @Scheduled(cron = "* * 3 * * ?")
+    @Scheduled(cron = "0 * * * * ?")
     public void uploadSeckillSkuLatestThreeDays() {
         // 1、重复上架无需处理
         seckillService.uploadSeckillSkuLatestThreeDays();

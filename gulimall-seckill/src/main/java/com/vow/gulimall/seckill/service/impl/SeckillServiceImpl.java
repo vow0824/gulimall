@@ -94,7 +94,7 @@ public class SeckillServiceImpl implements SeckillService {
                 seckillSkuRedisTo.setRandomCode(randomCode);
                 // 5、引入分布式信号量，将商品可以秒杀的件数作为信号量   限流
                 redissonClient.getSemaphore(SKU_STOCK_SEMAPHORE + randomCode).trySetPermits(item.getSeckillCount());
-                hashOps.put(item.getId(), JSON.toJSONString(seckillSkuRedisTo));
+                hashOps.put(item.getId().toString(), JSON.toJSONString(seckillSkuRedisTo));
             });
         });
     }

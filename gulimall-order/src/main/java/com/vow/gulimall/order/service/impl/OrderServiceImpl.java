@@ -20,7 +20,6 @@ import com.vow.gulimall.order.service.OrderItemService;
 import com.vow.gulimall.order.service.PaymentInfoService;
 import com.vow.gulimall.order.to.OrderCreateTo;
 import com.vow.gulimall.order.vo.*;
-import io.seata.spring.annotation.GlobalTransactional;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
