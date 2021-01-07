@@ -1,13 +1,11 @@
-package com.vow.gulimall.seckill.to;
+package com.vow.gulimall.product.vo;
 
-import com.vow.gulimall.seckill.vo.SkuInfoVo;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.util.Date;
 
 @Data
-public class SeckillSkuRedisTo {
+public class SeckillInfoVo {
 
     /**
      * 活动id
@@ -37,11 +35,6 @@ public class SeckillSkuRedisTo {
      * 排序
      */
     private Integer seckillSort;
-
-    /**
-     * sku的详细信息
-     */
-    private SkuInfoVo skuInfo;
 
     /**
      * 当前商品秒杀的开始时间

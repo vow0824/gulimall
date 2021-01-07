@@ -21,7 +21,7 @@ import com.vow.gulimall.order.dao.OrderItemDao;
 import com.vow.gulimall.order.entity.OrderItemEntity;
 import com.vow.gulimall.order.service.OrderItemService;
 
-@RabbitListener(queues = {"hello-java-queue"})
+//@RabbitListener(queues = {"hello-java-queue"})
 @Service("orderItemService")
 public class OrderItemServiceImpl extends ServiceImpl<OrderItemDao, OrderItemEntity> implements OrderItemService {
 
@@ -64,7 +64,7 @@ public class OrderItemServiceImpl extends ServiceImpl<OrderItemDao, OrderItemEnt
         System.out.println("消息处理完成：" + content.getName());
     }*/
 
-    @RabbitHandler
+    /*@RabbitHandler
     public void receiveMessage(Message message, OrderReturnReasonEntity content, Channel channel) {
         System.out.println("接收到消息。。。" + content);
         byte[] body = message.getBody();
@@ -90,6 +90,6 @@ public class OrderItemServiceImpl extends ServiceImpl<OrderItemDao, OrderItemEnt
     @RabbitHandler
     public void receiveMessage2(OrderEntity content) throws InterruptedException {
         System.out.println("接收到消息。。。" + content);
-    }
+    }*/
 
 }
