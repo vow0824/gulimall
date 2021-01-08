@@ -3,6 +3,7 @@ package com.vow.gulimall.seckill.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
+import com.vow.common.to.mq.SeckillOrderTo;
 import com.vow.common.utils.R;
 import com.vow.common.vo.MemberResponseVo;
 import com.vow.gulimall.seckill.feign.CouponFeignService;
@@ -15,6 +16,7 @@ import com.vow.gulimall.seckill.vo.SeckillSkuVo;
 import com.vow.gulimall.seckill.vo.SkuInfoVo;
 import org.redisson.api.RSemaphore;
 import org.redisson.api.RedissonClient;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.BoundHashOperations;
@@ -38,6 +40,9 @@ public class SeckillServiceImpl implements SeckillService {
 
     @Autowired
     StringRedisTemplate stringRedisTemplate;
+
+    @Autowired
+    RabbitTemplate rabbitTemplate;
 
     @Autowired
     RedissonClient redissonClient;
@@ -66,6 +71,7 @@ public class SeckillServiceImpl implements SeckillService {
 
     /**
      * f返回当前可参与秒杀的商品
+     *
      * @return
      */
     @Override
@@ -86,7 +92,7 @@ public class SeckillServiceImpl implements SeckillService {
             if (time >= start && time <= end) {
                 // 2、获取这个秒杀场次需要的所有商品信息a
                 List<String> range = stringRedisTemplate.opsForList().range(key, -100, 100);
-                BoundHashOperations<String, String, String> hashOps =stringRedisTemplate.boundHashOps(SKUKILL_CACHE_PREFIX);
+                BoundHashOperations<String, String, String> hashOps = stringRedisTemplate.boundHashOps(SKUKILL_CACHE_PREFIX);
                 List<String> list = hashOps.multiGet(range);
                 if (list != null && list.size() > 0) {
                     List<SeckillSkuRedisTo> collect = list.stream().map(item -> {
@@ -110,7 +116,7 @@ public class SeckillServiceImpl implements SeckillService {
         BoundHashOperations<String, String, String> hashOps = stringRedisTemplate.boundHashOps(SKUKILL_CACHE_PREFIX);
         Set<String> keys = hashOps.keys();
         if (keys != null && keys.size() > 0) {
-            String regx= "\\d-" + skuId;
+            String regx = "\\d-" + skuId;
             for (String key : keys) {
                 if (Pattern.matches(regx, key)) {
                     String json = hashOps.get(key);
@@ -126,13 +132,16 @@ public class SeckillServiceImpl implements SeckillService {
         return null;
     }
 
+    // TODO 上架秒杀商品的时候，每一个数据都有过期时间
+    // TODO 秒杀的后续流程，简化了收获地址等信息
+    // TODO 秒杀商品库存的提前扣减以及秒杀活动结束后剩余库存的释放
     @Override
     public String kill(String killId, String key, Integer num) {
         MemberResponseVo memberResponseVo = LoginUserInterceptor.loginUser.get();
 
         // 1、获取当前秒杀商品的详细信息
         BoundHashOperations<String, String, String> hashOps = stringRedisTemplate.boundHashOps(SKUKILL_CACHE_PREFIX);
-        String s = hashOps.get(key);
+        String s = hashOps.get(killId);
         if (!StringUtils.isEmpty(s)) {
             SeckillSkuRedisTo skuRedisTo = JSON.parseObject(s, SeckillSkuRedisTo.class);
             // 校验合法性
@@ -154,14 +163,22 @@ public class SeckillServiceImpl implements SeckillService {
                         if (aBoolean) {
                             // 占位成功说明没有购买过
                             RSemaphore semaphore = redissonClient.getSemaphore(SKU_STOCK_SEMAPHORE + randomCode);
-                            try {
-                                boolean b = semaphore.tryAcquire(num, 100, TimeUnit.MILLISECONDS);
+                            boolean b = semaphore.tryAcquire(num);
+                            if (b) {
                                 // 秒杀成功
                                 // 快速下单。发送MQ消息
-                                return IdWorker.getTimeId();
-                            } catch (InterruptedException e) {
-                                return null;
+                                String orderSn = IdWorker.getTimeId();
+                                SeckillOrderTo seckillOrderTo = new SeckillOrderTo();
+                                seckillOrderTo.setOrderSn(orderSn);
+                                seckillOrderTo.setMemberId(memberResponseVo.getId());
+                                seckillOrderTo.setNum(num);
+                                seckillOrderTo.setPromotionSessionId(skuRedisTo.getPromotionSessionId());
+                                seckillOrderTo.setSkuId(skuRedisTo.getSkuId());
+                                seckillOrderTo.setSeckillPrice(skuRedisTo.getSeckillPrice());
+                                rabbitTemplate.convertAndSend("order-event-exchange", "order.seckill.order", seckillOrderTo);
+                                return orderSn;
                             }
+                            return null;
                         }
                         // 占位失败，说明购买过
                         return null;

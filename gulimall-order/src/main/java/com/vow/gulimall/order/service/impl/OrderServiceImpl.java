@@ -4,6 +4,7 @@ import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.vow.common.exception.NoStockException;
 import com.vow.common.to.mq.OrderTo;
+import com.vow.common.to.mq.SeckillOrderTo;
 import com.vow.common.utils.R;
 import com.vow.common.vo.MemberResponseVo;
 import com.vow.gulimall.order.constant.OrderConstant;
@@ -320,6 +321,29 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
             this.baseMapper.updateOrderStatus(vo.getOut_trade_no(), OrderStatusEnum.PAYED.getCode());
         }
         return "success";
+    }
+
+    @Transactional
+    @Override
+    public void createSeckillOrder(SeckillOrderTo seckillOrderTo) {
+        // TODO 保存订单信息
+        OrderEntity orderEntity = new OrderEntity();
+        orderEntity.setOrderSn(seckillOrderTo.getOrderSn());
+        orderEntity.setMemberId(seckillOrderTo.getMemberId());
+        orderEntity.setStatus(OrderStatusEnum.CREATE_NEW.getCode());
+        BigDecimal multiply = seckillOrderTo.getSeckillPrice().multiply(new BigDecimal("" + seckillOrderTo.getNum()));
+        orderEntity.setPayAmount(multiply);
+        orderEntity.setTotalAmount(seckillOrderTo.getSeckillPrice());
+        this.save(orderEntity);
+
+        // TODO 保存订单项信息
+        OrderItemEntity orderItemEntity = new OrderItemEntity();
+        orderItemEntity.setOrderSn(seckillOrderTo.getOrderSn());
+        orderItemEntity.setRealAmount(multiply);
+        orderItemEntity.setSkuQuantity(seckillOrderTo.getNum());
+        // TODO 获取当前sku详细信息进行设置
+
+        orderItemService.save(orderItemEntity);
     }
 
     /**
